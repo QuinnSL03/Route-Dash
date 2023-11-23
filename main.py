@@ -1,21 +1,14 @@
-from socket import timeout
-from turtle import right
 import discord
 from discord.ext import commands
 import random
-import secrets
-import time
 import asyncio
-from discord.ext import tasks
 import handeval
-
 
 intents = discord.Intents.all()
 intents.message_content = True
 client = commands.Bot(command_prefix="$",intents=intents)
 top = "<:blankbacktop:714565166070759454>"
 bot = "<:blankbackbot:714565093798576455>"
-ex = "<:rK:623564441073614848>"
 channel = client.get_channel("732386342402785418")
 game = None
 active_players = []
@@ -53,29 +46,18 @@ class Pot:
         while i < len(self.players):
             a = game.reformatcard(self.players[i].hand[0])
             b = game.reformatcard(self.players[i].hand[1])
-            next = game.formatedtable + [a,b]
-               
+            next = game.formatedtable + [a,b] 
             result = handeval.compare_hands(max,next)
             print(i,a,b)
-
             if result[0] == "left":
-                winner = max
-                
+                winner = max 
             else:
                 winner = next
                 max = next
-
             wincondition = result[1]
             i += 1
-
         return [winner, wincondition]
             
-           
-
-
-
-
-
 class Poker:
     backcardtop = ":blankbacktop:714565166070759454" 
     backcardbottom = ":blankbackbot:714565093798576455"
@@ -92,8 +74,6 @@ class Poker:
     formatedtable = []
     mainpot = None
     i = 0
-
-
     deck = ["bAc", "bAs", "rAh", "rAd", 
     "b2c", "b2s", "r2h", "r2d", 
     "b3c", "b3s", "r3h", "r3d", 
@@ -107,7 +87,6 @@ class Poker:
     "bJc", "bJs", "rJh", "rJd",
     "bQc", "bQs", "rQh", "rQd",
     "bKc", "bKs", "rKh", "rKd"]
-
     active_deck = deck.copy()
     
     def __init__(self, players, blind, buyin, channel):
@@ -134,14 +113,11 @@ class Poker:
         else:
             suit = "ediamonds"
         return [str(discord.utils.get(client.emojis, name=a)), str(discord.utils.get(client.emojis, name=suit))]
-        
-        
-    def deal(self):
-        
+         
+    def deal(self): 
         card = str(random.choice(self.active_deck))
         self.active_deck.remove(card)
         print(card)
-        
         return card
 
     def call(self):
@@ -161,7 +137,6 @@ class Poker:
         self.turnsleft.remove(self.currentplayer)
         if self.i == len(self.turnsleft) and len(self.turnsleft) > 0:
             self.i = 0
-
         self.done = True
         return
     
@@ -183,7 +158,6 @@ class Poker:
             player.hand = [self.deal(), self.deal()]
         self.playersin = self.players.copy()
         
-
     def reformatcard(self, card):
         card = card[1:]
         if card[:2] == "1":
@@ -191,13 +165,7 @@ class Poker:
         print(type(card))
         return card
 
-    
-    
-
-
-
     async def startround(self, channel):
-        
         round = self.round
         while True:
             if not(self.bet):
@@ -262,11 +230,6 @@ class Poker:
                 self.formatedtable.append(self.reformatcard(card))
             pot = Pot(10,[Player(None, [game.deal(),game.deal()], 30), Player(None, [game.deal(),game.deal()], 30), Player(None, [game.deal(),game.deal()], 30)])
             print(pot.findwinner())
-                
-
-            a = ['Qd', 'Kd', '9d', 'Jd', 'Td', '4h', '5c'] 
-            b = ['Qd', 'Kd', '9d', 'Jd', 'Td', 'Ad', '5c'] 
-            await channel.send(handeval.compare_hands(a,b))
             return
             #find winner
 
@@ -276,7 +239,6 @@ class Poker:
         self.currentplayer = self.turnsleft[0]
         self.currentbet = 0
         while True:
-            
             print("loop")
             
             await channel.send(self.currentplayer.playerobj.display_name + "'s turn\nAuto fold/check in 10 seconds")
@@ -286,7 +248,6 @@ class Poker:
                     self.check()
                 else:
                     self.fold()
-            
             
             if len(self.turnsleft) > 0:
                 self.i += 1
@@ -300,13 +261,6 @@ class Poker:
         self.round += 1
         
         await self.startround(channel)
-        
-                
-
-  
-            
-
-
 
 @client.event
 async def on_ready():
@@ -336,13 +290,11 @@ class JoinMenu(discord.ui.View):
         else:
             await interaction.response.send_message(str(interaction.user.display_name) + " already joined")
 
-
 class Menu(discord.ui.View):
     def __init__(self):
         super().__init__()
         self.value = None
         
-
     @discord.ui.button(label="View Hand", style = discord.ButtonStyle.blurple)
     async def gethand(self, interaction: discord.Interaction, button: discord.ui.Button):
         i = 0
@@ -353,7 +305,6 @@ class Menu(discord.ui.View):
                 await interaction.response.send_message("\n" + card1[0] + "\t" + card2[0] + "\n" + card1[1] + "\t" + card2[1], ephemeral=True)
             i += 1
 
-
     @discord.ui.button(label="Call", style = discord.ButtonStyle.green)
     async def call(self, interaction: discord.Interaction, button: discord.ui.Button):
         print("called")
@@ -363,7 +314,6 @@ class Menu(discord.ui.View):
         else:
             await interaction.response.send_message("Not your turn" + str(game.bet) + str(game.done), ephemeral=True)
         
-
     @discord.ui.button(label="Raise", style = discord.ButtonStyle.red)
     async def raisecall(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user == game.currentplayer.playerobj and game.bet and not(game.done):
@@ -387,12 +337,9 @@ class Menu(discord.ui.View):
         else:
             await interaction.response.send_message("Not your turn", ephemeral=True)
 
-
-
 @client.event
 async def on_message(message):
     if message.channel.id == 732386342402785418:
-        
         if message.author == client.user:
             return
         if message.content.startswith('$p'):
@@ -401,9 +348,6 @@ async def on_message(message):
             
             await lobby(message)
             
-                
-              
-
 async def lobby(messagestart):
     ##ex = discord.utils.get(client.emojis, name='rQ')
     view = JoinMenu()
@@ -425,7 +369,7 @@ async def run_game(game):
     game.dealplayers()
     await game.startround(channel)
 
-token = 'MTE3NTg2ODQ2ODQ0NTMxOTI3OQ.G97Gkc.623907SndeYUmN6ZOF0kwUSTBkRq6s1kteEMdQ'
+token = ''
 client.run(token)
 
 
