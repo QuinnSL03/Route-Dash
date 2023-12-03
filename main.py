@@ -12,7 +12,7 @@ bot = "<:blankbackbot:714565093798576455>"
 channel = client.get_channel("732386342402785418")
 game = None
 active_players = []
-min_players = 2
+min_players = 1
 messagestart = None
 game_start = False
 game = None
@@ -245,8 +245,10 @@ class Poker:
             await asyncio.sleep(5) 
             if not(self.done):
                 if self.currentplayer.bet >= self.currentbet or self.currentplayer.bal == 0:
+                    await channel.send(self.currentplayer.playerobj.display_name + " auto checked")
                     self.check()
                 else:
+                    await channel.send(self.currentplayer.playerobj.display_name + " auto folded")
                     self.fold()
             
             if len(self.turnsleft) > 0:
