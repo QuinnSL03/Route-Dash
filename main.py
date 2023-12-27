@@ -3,22 +3,25 @@ from discord.ext import commands
 import random
 import asyncio
 import handeval
+import userfunc as uf
 
 intents = discord.Intents.all()
 intents.message_content = True
+intents.members = True
 client = commands.Bot(command_prefix="$",intents=intents)
 top = "<:blankbacktop:714565166070759454>"
 bot = "<:blankbackbot:714565093798576455>"
 channel = client.get_channel("732386342402785418")
 game = None
 active_players = []
-min_players = 1
+min_players = 2
 message_start = None
 game_start = False
 game = None
 
 
 class Player: 
+
     def __init__(self, player_obj, hand, bal):
         self.bet = 0
         self.bal = bal
@@ -29,6 +32,7 @@ class Player:
         return self.hand
 
 class Pot:
+
     def __init__(self, amount, players):
         self.amount = amount
         self.players = players
@@ -41,24 +45,29 @@ class Pot:
             return [winner, "N/A"]
         a = game.reformat_card(self.players[0].hand[0])
         b = game.reformat_card(self.players[0].hand[1])
-        max = game.formatted_table + [a,b] 
-
+        max = [a,b] + game.formatted_table 
+        player_winner = self.players[0]
         while i < len(self.players):
             a = game.reformat_card(self.players[i].hand[0])
             b = game.reformat_card(self.players[i].hand[1])
-            next = game.formatted_table + [a,b] 
+            next = [a,b] + game.formatted_table
+            
             result = handeval.compare_hands(max,next)
             print(i,a,b)
             if result[0] == "left":
-                winner = max 
+                winner = max  
             else:
                 winner = next
                 max = next
+                player_winner = self.players[i]
             win_condition = result[1]
             i += 1
-        return [winner, win_condition]
+        return [player_winner, win_condition]
+        
+        
             
 class Poker:
+
     back_card_top = ":blankbacktop:714565166070759454" 
     back_card_bottom = ":blankbackbot:714565093798576455"
     pots = []
@@ -228,9 +237,12 @@ class Poker:
         else:
             for card in self.table_cards:
                 self.formatted_table.append(self.reformat_card(card))
-            pot = Pot(10,[Player(None, [game.deal(),game.deal()], 30), Player(None, [game.deal(),game.deal()], 30), Player(None, [game.deal(),game.deal()], 30)])
-            print(pot.find_winner())
-            return
+            await channel.send(self.main_pot.find_winner)
+            winner = self.main_pot.find_winner()
+            await channel.send(self.main_pot.players)
+            await channel.send(winner[0].player_obj.display_name)
+            await channel.send(winner[1])
+            
             #find winner
 
     async def betting(self):
@@ -263,6 +275,25 @@ class Poker:
         self.round += 1
         
         await self.start_round(channel)
+
+
+
+        
+
+@client.command()
+async def load(ctx):
+    users_data = ""
+    for member in channel.guild.members: 
+        check = uf.get_balance(member.id)
+        await asyncio.sleep(1)
+        if check == -1:
+            users_data += str(member.id) + ":" + "1000-" + "\n"
+            #await channel.send("Writing " + str(member.id) + " with $1000")
+        else:
+            print("already contains" + str(member.id)) 
+            #await channel.send("already contains " + str(member.id))
+    uf.write_new_users(users_data)
+       
 
 @client.event
 async def on_ready():
@@ -347,8 +378,22 @@ async def on_message(message):
         if message.content.startswith('$p'):
             global channel
             channel = message.channel
-            
             await lobby(message)
+        if message.content.startswith('$bal'):
+            await message.channel.send(message.author.display_name + "'s balance: " + get_balance(message.author.id))
+        if message.content.startswith("$ls"):
+            uf.sort_bals()
+            await message.channel.send("* Quinn - $1000\n" + "* OneBeerLeft - $1\n") 
+        if message.content.startswith("$help"):
+            await message.channel.send("* $p - starts game\n* $bal - returns your balance\n* $ls - leaderboard of users in the server")
+        if message.content.startswith('hi'):
+            await message.channel.send("hi")
+        if message.content.startswith('hello'):
+            await message.channel.send("hi")
+        if message.content.startswith('aidan'):
+            aidan = "aidan " * 300
+            await message.channel.send(aidan)
+        await client.process_commands(message)
             
 async def lobby(message_start):
     ##ex = discord.utils.get(client.emojis, name='rQ')
@@ -371,7 +416,12 @@ async def run_game(game):
     game.deal_players()
     await game.start_round(channel)
 
-token = 'MTE3NTg2ODQ2ODQ0NTMxOTI3OQ.G-JtHF.tDzEd1s7FTYID9bt1QWBBOYTVEufmuZN8H6B7c'
+
+
+            
+            
+
+token = ''
 client.run(token)
 
 
