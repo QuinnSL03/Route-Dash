@@ -38,8 +38,12 @@ def write_balance(id, bal):
             file.write(line)
 
 def write_new_users(users):
+    with open("data.text", "r") as file:
+        data = file.readlines()
+        data.append(users)
     with open("data.text", "w") as file:
-        file.write(users)
+        for line in data:
+            file.write(line)
 
 def sort_bals():
     sorted_data = []
@@ -58,7 +62,14 @@ def sort_bals():
         file.write(data)
         
 def return_board():
+    data = []
     with open("data.text", "r") as file:
-        data += file.readlines()
+        lines = file.readlines()
+        for line in lines:
+            data.append([line[:line.index(":")], line[line.index(":")+1:line.index("-")]])
+    print(data)
+    return data
+
+        
 
 

@@ -380,10 +380,14 @@ async def on_message(message):
             channel = message.channel
             await lobby(message)
         if message.content.startswith('$bal'):
-            await message.channel.send(message.author.display_name + "'s balance: " + get_balance(message.author.id))
+            await message.channel.send(message.author.display_name + "'s balance: " + uf.get_balance(message.author.id))
         if message.content.startswith("$ls"):
             uf.sort_bals()
-            await message.channel.send("* Quinn - $1000\n" + "* OneBeerLeft - $1\n") 
+            data = uf.return_board()
+            board = ""
+            for user in data:
+                board += "* " + client.get_user(int(user[0])).display_name + ": " + user[1] + "\n"
+            await message.channel.send(board) 
         if message.content.startswith("$help"):
             await message.channel.send("* $p - starts game\n* $bal - returns your balance\n* $ls - leaderboard of users in the server")
         if message.content.startswith('hi'):
@@ -421,7 +425,7 @@ async def run_game(game):
             
             
 
-token = ''
+token = 'MTE3NTg2ODQ2ODQ0NTMxOTI3OQ.GqkiDU.M4ZOxH9tWW7CYlYMO_lebiwGGiHWzX3c-9p7gk'
 client.run(token)
 
 
