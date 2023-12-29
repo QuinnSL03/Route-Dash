@@ -12,9 +12,11 @@ client = commands.Bot(command_prefix="$",intents=intents)
 top = "<:blankbacktop:714565166070759454>"
 bot = "<:blankbackbot:714565093798576455>"
 channel = client.get_channel("732386342402785418")
-game = None
+leaderboard_channel = client.get_channel("732386342402785410")
 active_players = []
+betting_time = 1
 min_players = 2
+game_start_time = 10
 message_start = None
 game_start = False
 game = None
@@ -70,19 +72,19 @@ class Poker:
 
     back_card_top = ":blankbacktop:714565166070759454" 
     back_card_bottom = ":blankbackbot:714565093798576455"
-    pots = []
-    player_sin = []
-    current_bet = 0
-    round = 1
-    players = []
-    current_player = None
-    table_cards = []
-    done = False
-    bet = False
-    turns_left = []
-    formatted_table = []
-    main_pot = None
-    i = 0
+    
+    #pots = []
+    #current_bet = 0
+    #round = 1
+    #players = []
+    #current_player = None
+    #table_cards = []
+    #done = False
+    #bet = False
+    #turns_left = []
+    #formatted_table = []
+    #main_pot = None
+    #i = 0
     deck = ["bAc", "bAs", "rAh", "rAd", 
     "b2c", "b2s", "r2h", "r2d", 
     "b3c", "b3s", "r3h", "r3d", 
@@ -96,14 +98,30 @@ class Poker:
     "bJc", "bJs", "rJh", "rJd",
     "bQc", "bQs", "rQh", "rQd",
     "bKc", "bKs", "rKh", "rKd"]
-    active_deck = deck.copy()
+    
+    
+    
     
     def __init__(self, players, blind, buy_in, channel):
+        self.active_deck = self.deck.copy()
+        self.players = []
         for player in players:
             self.players.append(Player(player,[], buy_in))
         self.current_player = self.players[0]
         self.channel = channel
         self.main_pot = Pot(0, self.players)
+        self.pots = []
+        self.players_in = self.players.copy()
+        self.current_bet = 0
+        self.round = 1
+        self.current_player = None
+        self.table_cards = []
+        self.done = False
+        self.bet = False
+        self.turns_left = []
+        self.formatted_table = []
+        self.i = 0
+        
         
     def find_card_emoji(self, card):
         a = card[:2]
@@ -237,11 +255,17 @@ class Poker:
         else:
             for card in self.table_cards:
                 self.formatted_table.append(self.reformat_card(card))
-            await channel.send(self.main_pot.find_winner)
+            await channel.send(self.main_pot.find_winner())
             winner = self.main_pot.find_winner()
             await channel.send(self.main_pot.players)
             await channel.send(winner[0].player_obj.display_name)
             await channel.send(winner[1])
+            winner_card1 = self.find_card_emoji(winner[0].hand[0])
+            winner_card2 = self.find_card_emoji(winner[0].hand[1])
+            await channel.send("Winning Hand:")
+            await channel.send(winner_card1[0] + "\t" + winner_card2[0] + "\n" + winner_card1[1] + "\t" + winner_card2[1])
+            global game
+            game = None
             
             #find winner
 
@@ -251,10 +275,10 @@ class Poker:
         self.current_player = self.turns_left[0]
         self.current_bet = 0
         while True:
-            print("loop")
-            
+            print("betting loop")
+            print("turns: " + str(len(self.turns_left)))
             await channel.send(self.current_player.player_obj.display_name + "'s turn\nAuto fold/check in 10 seconds")
-            await asyncio.sleep(5) 
+            await asyncio.sleep(betting_time) 
             if not(self.done):
                 if self.current_player.bet >= self.current_bet or self.current_player.bal == 0:
                     await channel.send(self.current_player.player_obj.display_name + " auto checked")
@@ -275,9 +299,6 @@ class Poker:
         self.round += 1
         
         await self.start_round(channel)
-
-
-
         
 
 @client.command()
@@ -378,6 +399,10 @@ async def on_message(message):
         if message.content.startswith('$p'):
             global channel
             channel = message.channel
+            print(type(game))
+            if game is not None:
+                print(game.table_cards)
+            
             await lobby(message)
         if message.content.startswith('$bal'):
             await message.channel.send(message.author.display_name + "'s balance: " + uf.get_balance(message.author.id))
@@ -401,31 +426,30 @@ async def on_message(message):
             
 async def lobby(message_start):
     ##ex = discord.utils.get(client.emojis, name='rQ')
+    active_players.clear()
     view = JoinMenu()
     await message_start.channel.send(view=view)
   
-    await asyncio.sleep(2)
+    await asyncio.sleep(game_start_time)
 
     if len(active_players) >= min_players:
         await message_start.channel.send("Starting game in 5 seconds")
         await asyncio.sleep(5)
-
+        print(type(game))
         await create_game(active_players)
-        
     else:
         await message_start.channel.send("Game Expired")
+    
 
 async def run_game(game):
     print("dealing")
     game.deal_players()
     await game.start_round(channel)
 
-
-
             
             
 
-token = 'MTE3NTg2ODQ2ODQ0NTMxOTI3OQ.GqkiDU.M4ZOxH9tWW7CYlYMO_lebiwGGiHWzX3c-9p7gk'
+token = 'MTE3NTg2ODQ2ODQ0NTMxOTI3OQ.G5_mwv.aw07xFgox5i4hwX-mjpq64TEbfSd9HJ1vthotY'
 client.run(token)
 
 
