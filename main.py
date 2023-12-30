@@ -22,7 +22,6 @@ message_start = None
 game_start = False
 game = None
 
-
 class Player: 
     def __init__(self, player_obj, hand, bal):
         self.bet = 0
@@ -39,7 +38,6 @@ class Pot:
         self.players = players
 
     def find_winner(self):
-        i = 1
         winner = self.players[0]
         win_condition = ""
         if len(self.players) == 1:
@@ -48,7 +46,8 @@ class Pot:
         b = game.reformat_card(self.players[0].hand[1])
         max = [a,b] + game.formatted_table 
         player_winner = self.players[0]
-        while i < len(self.players):
+
+        for i in range(len(self.players)):
             a = game.reformat_card(self.players[i].hand[0])
             b = game.reformat_card(self.players[i].hand[1])
             next = [a,b] + game.formatted_table
@@ -62,7 +61,6 @@ class Pot:
                 max = next
                 player_winner = self.players[i]
             win_condition = result[1]
-            i += 1
         return [player_winner, win_condition]
     
 class Poker:
@@ -339,13 +337,11 @@ class Menu(discord.ui.View):
         
     @discord.ui.button(label="View Hand", style = discord.ButtonStyle.blurple)
     async def get_hand(self, interaction: discord.Interaction, button: discord.ui.Button):
-        i = 0
-        while i < len(game.players):
+        for i in range(len(game.players)):
             if game.players[i].player_obj.id == interaction.user.id:
                 card1 = game.find_card_emoji(game.players[i].hand[0])
                 card2 = game.find_card_emoji(game.players[i].hand[1])
                 await interaction.response.send_message("\n" + card1[0] + "\t" + card2[0] + "\n" + card1[1] + "\t" + card2[1], ephemeral=True)
-            i += 1
 
     @discord.ui.button(label="Call", style = discord.ButtonStyle.green)
     async def call(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -386,13 +382,23 @@ async def on_message(message):
     #if message.channel.id == 768093332538523659:
         if message.author == client.user:
             return
-        if message.content.startswith('$p'):
-            global channel
-            channel = message.channel
-            print(type(game))
-            if game is not None:
-                print(game.table_cards)
-            await lobby(message)
+        if message.content.startswith('hi'):
+            await message.channel.send("hi")
+        if message.content.startswith('hello'):
+            await message.channel.send("hi")
+        if message.content.startswith('aidan'):
+            aidan = "aidan " * 300
+            await message.channel.send(aidan)
+
+        if not message.content.startswith('$p'):
+            return
+
+        global channel
+        channel = message.channel
+        print(type(game))
+        if game is not None:
+            print(game.table_cards)
+        await lobby(message)
         if message.content.startswith('$bal'):
             await message.channel.send(message.author.display_name + "'s balance: " + uf.get_balance(message.author.id))
         if message.content.startswith("$ls"):
@@ -404,14 +410,7 @@ async def on_message(message):
             await message.channel.send(board) 
         if message.content.startswith("$help"):
             await message.channel.send("* $p - starts game\n* $bal - returns your balance\n* $ls - leaderboard of users in the server")
-        if message.content.startswith('hi'):
-            await message.channel.send("hi")
-        if message.content.startswith('hello'):
-            await message.channel.send("hi")
-        if message.content.startswith('aidan'):
-            aidan = "aidan " * 300
-            await message.channel.send(aidan)
-        await client.process_commands(message)
+       await client.process_commands(message)
             
 async def lobby(message_start):
     active_players.clear()
@@ -431,7 +430,7 @@ async def run_game(game):
     game.deal_players()
     await game.start_round(channel)           
 
-token = ''
+token = os.getenv('poker_bot_token')
 client.run(token)
 
 
