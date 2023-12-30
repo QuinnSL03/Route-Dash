@@ -64,8 +64,6 @@ class Pot:
         return [player_winner, win_condition]
     
 class Poker:
-    back_card_top = ":blankbacktop:714565166070759454" 
-    back_card_bottom = ":blankbackbot:714565093798576455"
     deck = ["bAc", "bAs", "rAh", "rAd", 
     "b2c", "b2s", "r2h", "r2d", 
     "b3c", "b3s", "r3h", "r3d", 
@@ -111,15 +109,13 @@ class Poker:
             a = card[:3]
             b = card[3:]
         print(card[:2], card[2:])
-        suit = ""
+        suit = "ediamonds"
         if b == "c":
             suit = "eclubs"
         elif b == "s":
             suit = "espades"
         elif b == "h":
             suit = "ehearts"
-        else:
-            suit = "ediamonds"
         return [str(discord.utils.get(client.emojis, name=a)), str(discord.utils.get(client.emojis, name=suit))]
          
     def deal(self): 
@@ -410,7 +406,7 @@ async def on_message(message):
             await message.channel.send(board) 
         if message.content.startswith("$help"):
             await message.channel.send("* $p - starts game\n* $bal - returns your balance\n* $ls - leaderboard of users in the server")
-       await client.process_commands(message)
+        await client.process_commands(message)
             
 async def lobby(message_start):
     active_players.clear()
