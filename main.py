@@ -432,6 +432,3 @@ async def run_game(game):
 
 token = os.getenv('poker_bot_token')
 client.run(token)
-
-
-
