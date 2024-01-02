@@ -22,7 +22,6 @@ message_start = None
 game_start = False
 game = None
 
-
 class Player: 
     def __init__(self, player_obj, hand, bal):
         self.bet = 0
@@ -39,7 +38,6 @@ class Pot:
         self.players = players
 
     def find_winner(self):
-        i = 1
         winner = self.players[0]
         win_condition = ""
         if len(self.players) == 1:
@@ -48,7 +46,8 @@ class Pot:
         b = game.reformat_card(self.players[0].hand[1])
         max = [a,b] + game.formatted_table 
         player_winner = self.players[0]
-        while i < len(self.players):
+
+        for i in range(len(self.players)):
             a = game.reformat_card(self.players[i].hand[0])
             b = game.reformat_card(self.players[i].hand[1])
             next = [a,b] + game.formatted_table
@@ -62,12 +61,9 @@ class Pot:
                 max = next
                 player_winner = self.players[i]
             win_condition = result[1]
-            i += 1
         return [player_winner, win_condition]
     
 class Poker:
-    back_card_top = ":blankbacktop:714565166070759454" 
-    back_card_bottom = ":blankbackbot:714565093798576455"
     deck = ["bAc", "bAs", "rAh", "rAd", 
     "b2c", "b2s", "r2h", "r2d", 
     "b3c", "b3s", "r3h", "r3d", 
@@ -104,7 +100,6 @@ class Poker:
         self.table_message = None
         self.turns_status_message = None
         self.turns_status_dict = {}
-        self.round_status_message = None
 
     def find_card_emoji(self, card):
         a = card[:2]
@@ -113,15 +108,13 @@ class Poker:
             a = card[:3]
             b = card[3:]
         print(card[:2], card[2:])
-        suit = ""
+        suit = "ediamonds"
         if b == "c":
             suit = "eclubs"
         elif b == "s":
             suit = "espades"
         elif b == "h":
             suit = "ehearts"
-        else:
-            suit = "ediamonds"
         return [str(discord.utils.get(client.emojis, name=a)), str(discord.utils.get(client.emojis, name=suit))]
          
     def deal(self): 
@@ -184,7 +177,8 @@ class Poker:
             dict_values = self.turns_status_dict.values()
             for value in dict_values:
                 turns_status_str += value + "\n"
-            self.turns_status_message = await channel.send(turns_status_str)
+            embed = discord.Embed(description=turns_status_str)
+            self.turns_status_message = await channel.send(embed=embed)
             return
         for player_id in self.turns_status_dict.keys():
             if self.current_player.player_obj.id == player_id:
@@ -195,7 +189,8 @@ class Poker:
         dict_values = self.turns_status_dict.values()
         for value in dict_values:
             turns_status_str += value + "\n\n"
-        await self.turns_status_message.edit(content=turns_status_str)
+        embed = discord.Embed(description=turns_status_str)
+        await self.turns_status_message.edit(embed=embed)
         
     async def start_round(self, channel):
         round = self.round
@@ -204,8 +199,8 @@ class Poker:
                 break
         if round == 1:
             print("start 1")
-            self.round_status_message = await channel.send("The Pre-Flop:")
-            self.table_message = await channel.send(top + "\t" + top + "\t" + top + "\t" + top + "\t" + top + "\n" + bot + "\t" + bot + "\t" + bot + "\t" + bot + "\t" + bot)
+            embed = discord.Embed(title="The Pre-Flop", description=top + "\t" + top + "\t" + top + "\t" + top + "\t" + top + "\n" + bot + "\t" + bot + "\t" + bot + "\t" + bot + "\t" + bot)
+            self.table_message = await channel.send(embed=embed)
             await asyncio.sleep(.1)
             await run_menu()
             for player in active_players:
@@ -220,8 +215,8 @@ class Poker:
             table_card1 = self.find_card_emoji(self.table_cards[0])
             table_card2 = self.find_card_emoji(self.table_cards[1])
             table_card3 = self.find_card_emoji(self.table_cards[2])
-            await self.round_status_message.edit(content="The Flop:")
-            await self.table_message.edit(content=table_card1[0] + "\t" + table_card2[0] + "\t" + table_card3[0] + "\t" + top + "\t" + top + "\n" + table_card1[1] + "\t" + table_card2[1] + "\t" + table_card3[1] + "\t" + bot + "\t" + bot)
+            embed = discord.Embed(title="The Flop", description=table_card1[0] + "\t" + table_card2[0] + "\t" + table_card3[0] + "\t" + top + "\t" + top + "\n" + table_card1[1] + "\t" + table_card2[1] + "\t" + table_card3[1] + "\t" + bot + "\t" + bot)
+            await self.table_message.edit(embed=embed)
             await asyncio.sleep(.1)
             await self.betting()
         elif round == 3:
@@ -230,9 +225,8 @@ class Poker:
             table_card2 = self.find_card_emoji(self.table_cards[1])
             table_card3 = self.find_card_emoji(self.table_cards[2])
             table_card4 = self.find_card_emoji(self.table_cards[3])
-            await self.round_status_message.edit(content="The Turn:")
-            await self.table_message.edit(content=table_card1[0] + "\t" + table_card2[0] + "\t" + table_card3[0] + "\t" + table_card4[0] + "\t" + top + "\n"
-            + table_card1[1] + "\t" + table_card2[1] + "\t" + table_card3[1] + "\t" + table_card4[1] + "\t" + bot)
+            embed = discord.Embed(title="The Turn", description=table_card1[0] + "\t" + table_card2[0] + "\t" + table_card3[0] + "\t" + table_card4[0] + "\t" + top + "\n" + table_card1[1] + "\t" + table_card2[1] + "\t" + table_card3[1] + "\t" + table_card4[1] + "\t" + bot)
+            await self.table_message.edit(embed=embed)
             await asyncio.sleep(.1)
             await self.betting()
         elif round == 4:
@@ -242,21 +236,18 @@ class Poker:
             table_card3 = self.find_card_emoji(self.table_cards[2])
             table_card4 = self.find_card_emoji(self.table_cards[3])
             table_card5 = self.find_card_emoji(self.table_cards[4])
-            await self.round_status_message.edit(content="The River:")
-            await self.table_message.edit(content=table_card1[0] + "\t" + table_card2[0] + "\t" + table_card3[0] + "\t" + table_card4[0] + "\t" + table_card5[0] + "\n"
-            + table_card1[1] + "\t" + table_card2[1] + "\t" + table_card3[1] + "\t" + table_card4[1] + "\t" + table_card5[1])
+            embed = discord.Embed(title="The River", description=table_card1[0] + "\t" + table_card2[0] + "\t" + table_card3[0] + "\t" + table_card4[0] + "\t" + table_card5[0] + "\n" + table_card1[1] + "\t" + table_card2[1] + "\t" + table_card3[1] + "\t" + table_card4[1] + "\t" + table_card5[1])
+            await self.table_message.edit(embed=embed)
             await asyncio.sleep(.1)
             await self.betting()
         else:
             for card in self.table_cards:
                 self.formatted_table.append(self.reformat_card(card))
             winner = self.main_pot.find_winner()
-            await channel.send(winner[0].player_obj.display_name)
-            await channel.send(winner[1])
             winner_card1 = self.find_card_emoji(winner[0].hand[0])
             winner_card2 = self.find_card_emoji(winner[0].hand[1])
-            await channel.send("Winning Hand:")
-            await channel.send(winner_card1[0] + "\t" + winner_card2[0] + "\n" + winner_card1[1] + "\t" + winner_card2[1])
+            embed = discord.Embed(title="Winner: " + winner[0].player_obj.display_name, description=winner[1] + "\n" + winner_card1[0] + "\t" + winner_card2[0] + "\n" + winner_card1[1] + "\t" + winner_card2[1])
+            await channel.send(embed=embed)
             global game
             game = None
 
@@ -339,13 +330,11 @@ class Menu(discord.ui.View):
         
     @discord.ui.button(label="View Hand", style = discord.ButtonStyle.blurple)
     async def get_hand(self, interaction: discord.Interaction, button: discord.ui.Button):
-        i = 0
-        while i < len(game.players):
+        for i in range(len(game.players)):
             if game.players[i].player_obj.id == interaction.user.id:
                 card1 = game.find_card_emoji(game.players[i].hand[0])
                 card2 = game.find_card_emoji(game.players[i].hand[1])
                 await interaction.response.send_message("\n" + card1[0] + "\t" + card2[0] + "\n" + card1[1] + "\t" + card2[1], ephemeral=True)
-            i += 1
 
     @discord.ui.button(label="Call", style = discord.ButtonStyle.green)
     async def call(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -386,13 +375,23 @@ async def on_message(message):
     #if message.channel.id == 768093332538523659:
         if message.author == client.user:
             return
-        if message.content.startswith('$p'):
-            global channel
-            channel = message.channel
-            print(type(game))
-            if game is not None:
-                print(game.table_cards)
-            await lobby(message)
+        if message.content.startswith('hi'):
+            await message.channel.send("hi")
+        if message.content.startswith('hello'):
+            await message.channel.send("hi")
+        if message.content.startswith('aidan'):
+            aidan = "aidan " * 300
+            await message.channel.send(aidan)
+
+        if not message.content.startswith('$p'):
+            return
+
+        global channel
+        channel = message.channel
+        print(type(game))
+        if game is not None:
+            print(game.table_cards)
+        await lobby(message)
         if message.content.startswith('$bal'):
             await message.channel.send(message.author.display_name + "'s balance: " + uf.get_balance(message.author.id))
         if message.content.startswith("$ls"):
@@ -404,13 +403,6 @@ async def on_message(message):
             await message.channel.send(board) 
         if message.content.startswith("$help"):
             await message.channel.send("* $p - starts game\n* $bal - returns your balance\n* $ls - leaderboard of users in the server")
-        if message.content.startswith('hi'):
-            await message.channel.send("hi")
-        if message.content.startswith('hello'):
-            await message.channel.send("hi")
-        if message.content.startswith('aidan'):
-            aidan = "aidan " * 300
-            await message.channel.send(aidan)
         await client.process_commands(message)
             
 async def lobby(message_start):
@@ -431,8 +423,5 @@ async def run_game(game):
     game.deal_players()
     await game.start_round(channel)           
 
-token = ''
+token = os.getenv('poker_bot_token')
 client.run(token)
-
-
-

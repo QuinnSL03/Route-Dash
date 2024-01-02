@@ -69,7 +69,3 @@ def return_board():
             data.append([line[:line.index(":")], line[line.index(":")+1:line.index("-")]])
     print(data)
     return data
-
-        
-
-
